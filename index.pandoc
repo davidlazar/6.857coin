@@ -1,0 +1,82 @@
+% 6.857Coin
+
+## API
+
+Explore the blockchain:
+
+> [/explore](/explore)
+
+Get information about the longest chain:
+
+> [/scores](/scores)
+
+Get information about a block (as JSON):
+
+> `/block/<hash>`
+>
+> Example: get information about the genesis block:
+>
+> [/block/77a22709b4f6ad7c13c1a5c898cb63872ed00be3eadbd94e6b32482fe7518d51](/block/77a22709b4f6ad7c13c1a5c898cb63872ed00be3eadbd94e6b32482fe7518d51)
+
+Get the next block in a chain (as JSON):
+
+> `/next/<hash>`
+
+Get the head of the blockchain (as JSON):
+
+> [/head](/head)
+>
+> You may periodically query `/head` to ensure you are mining the latest block.
+
+Add a block to the blockchain:
+
+>     POST /add HTTP/1.1
+> 
+>     {
+>       "PrevHash": "<hash>",
+>       "Contents": "<groupNumber|hash>",
+>       "Nonce": <uint64>,
+>       "Length": <uint32>
+>     }
+> 
+> To add a block, send a POST request to `/add` with the JSON block data in the request body.
+> The block must satisfy the proof-of-work scheme described below.
+
+## Proof of Work
+
+The hash of a block is the SHA-256 hash of the concatenation of the following data:
+
+* the bytes of PrevHash interpreted as a 32-byte number
+* the bytes of Contents interpreted as a string
+* the 8 bytes of Nonce in big-endian order
+* the 4 bytes of Length in big-endian order
+
+In other words:
+
+> `Hash(B) = SHA256(HexDecode(B.PrevHash) + Bytes(B.Contents) + Bytes(B.Nonce) + Bytes(B.Length))`
+
+For a block B to be accepted into the blockchain, the following must be true:
+
+* `B.PrevHash` is the Hash of a block P in the blockchain
+* `B.Length = P.Length + 1`
+* `B.Contents` is your group number or a hash representing a mining pool (see below)
+* The first `Difficulty(B)` bits of `Hash(B)` must be 0.
+
+Difficulty is defined as follows:
+
+> `Difficulty(B) = B.Length / 100 + 24`
+
+## Mining Pools
+
+You may form mining pools for the extra credit portion of the lab.
+To form a mining pool, pick a secret passphrase and set the `Contents`
+value of your blocks to the SHA-256 hash of the passphrase.
+Any extra credit awarded to the mining pool will be divided among
+the groups that include the passphrase in their Pset submission.
+
+## Rules
+
+* Do not seek outside help to mine blocks.
+* You may use GPUs, FPGAs, ASICs, etc.
+* Do not abuse MIT resources to mine blocks.
+* Limit the number of requests you send to the server to 4 requests per minute.
