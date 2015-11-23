@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>6.857Coin</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="data:text/css,body%20%7B%0A%20%20%20%20width%3A%20640px%3B%0A%20%20%20%20padding%3A%2040px%3B%0A%7D%0A" rel="stylesheet">
+</head>
+<body>
+<header>
+<h1 class="title">6.857Coin</h1>
+</header>
+<h2 id="api">API</h2>
+<p>Explore the blockchain:</p>
+<blockquote>
+<p><a href="/explore" class="uri">/explore</a></p>
+</blockquote>
+<p>Get information about the longest chain:</p>
+<blockquote>
+<p><a href="/scores" class="uri">/scores</a></p>
+</blockquote>
+<p>Get information about a block (as JSON):</p>
+<blockquote>
+<p><code>/block/&lt;hash&gt;</code></p>
+<p>Example: get information about the genesis block:</p>
+<p><a href="/block/77a22709b4f6ad7c13c1a5c898cb63872ed00be3eadbd94e6b32482fe7518d51" class="uri">/block/77a22709b4f6ad7c13c1a5c898cb63872ed00be3eadbd94e6b32482fe7518d51</a></p>
+</blockquote>
+<p>Get the next block in a chain (as JSON):</p>
+<blockquote>
+<p><code>/next/&lt;hash&gt;</code></p>
+</blockquote>
+<p>Get the head of the blockchain (as JSON):</p>
+<blockquote>
+<p><a href="/head" class="uri">/head</a></p>
+<p>You may periodically query <code>/head</code> to ensure you are mining the latest block.</p>
+</blockquote>
+<p>Add a block to the blockchain:</p>
+<blockquote>
+<pre><code>POST /add HTTP/1.1
+
+{
+  &quot;PrevHash&quot;: &quot;&lt;hash&gt;&quot;,
+  &quot;Contents&quot;: &quot;&lt;groupNumber|hash&gt;&quot;,
+  &quot;Nonce&quot;: &lt;uint64&gt;,
+  &quot;Length&quot;: &lt;uint32&gt;
+}</code></pre>
+<p>To add a block, send a POST request to <code>/add</code> with the JSON block data in the request body. The block must satisfy the proof-of-work scheme described below.</p>
+</blockquote>
+<h2 id="proof-of-work">Proof of Work</h2>
+<p>The hash of a block is the SHA-256 hash of the concatenation of the following data:</p>
+<ul>
+<li>the bytes of PrevHash interpreted as a 32-byte number</li>
+<li>the bytes of Contents interpreted as a string</li>
+<li>the 8 bytes of Nonce in big-endian order</li>
+<li>the 4 bytes of Length in big-endian order</li>
+</ul>
+<p>In other words:</p>
+<blockquote>
+<p><code>Hash(B) = SHA256(HexDecode(B.PrevHash) + Bytes(B.Contents) + Bytes(B.Nonce) + Bytes(B.Length))</code></p>
+</blockquote>
+<p>For a block B to be accepted into the blockchain, the following must be true:</p>
+<ul>
+<li><code>B.PrevHash</code> is the Hash of a block P in the blockchain</li>
+<li><code>B.Length = P.Length + 1</code></li>
+<li><code>B.Contents</code> is your group number or a hash representing a mining pool (see below)</li>
+<li>The first <code>Difficulty(B)</code> bits of <code>Hash(B)</code> must be 0.</li>
+</ul>
+<p>Difficulty is defined as follows:</p>
+<blockquote>
+<p><code>Difficulty(B) = B.Length / 100 + 24</code></p>
+</blockquote>
+<h2 id="mining-pools">Mining Pools</h2>
+<p>You may form mining pools for the extra credit portion of the lab. To form a mining pool, pick a secret passphrase and set the <code>Contents</code> value of your blocks to the SHA-256 hash of the passphrase. Any extra credit awarded to the mining pool will be divided among the groups that include the passphrase in their Pset submission.</p>
+<h2 id="rules">Rules</h2>
+<ul>
+<li>Do not seek outside help to mine blocks.</li>
+<li>You may use GPUs, FPGAs, ASICs, etc.</li>
+<li>Do not abuse MIT resources to mine blocks.</li>
+<li>Limit the number of requests you send to the server to 4 requests per minute.</li>
+</ul>
+</body>
+</html>
